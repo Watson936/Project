@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Geometry Flash - Nhảy-Bay-Nhịp điệu đỉnh cao</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@400;500;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #080a14;
+            font-family: 'Roboto', sans-serif;
+            touch-action: none;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .font-game {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(8, 10, 20, 0.95);
+            z-index: 10;
+            backdrop-filter: blur(12px);
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay-clear {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .neon-title {
+            color: #ffffff;
+            text-shadow:
+                0 0 10px #ffffff,
+                0 0 20px #00f0ff,
+                0 0 40px #00f0ff,
+                0 0 80px #00f0ff;
+        }
+
+        .neon-red {
+            color: #ffffff;
+            text-shadow:
+                0 0 10px #ffffff,
+                0 0 20px #ff2a6d,
+                0 0 40px #ff2a6d,
+                0 0 80px #ff2a6d;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(0, 110, 255, 0.5));
+            color: #ffffff;
+            border: 2px solid #00f0ff;
+            padding: 14px 32px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+            border-radius: 14px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .btn-main:hover {
+            background: #00f0ff;
+            color: #080a14;
+            box-shadow: 0 0 40px #00f0ff;
+            transform: translateY(-3px) scale(1.04);
+        }
+
+        .btn-purple {
+            background: linear-gradient(135deg, rgba(180, 0, 255, 0.25), rgba(110, 0, 255, 0.5));
+            border-color: #b400ff;
+            box-shadow: 0 0 25px rgba(180, 0, 255, 0.4);
+        }
+
+        .btn-purple:hover {
+            background: #b400ff;
+            color: #ffffff;
+            box-shadow: 0 0 40px #b400ff;
+        }
+
+        .modal-box {
+            background: #111428;
+            border: 2px solid #00f0ff;
+            border-radius: 20px;
+            padding: 28px;
+            max-width: 680px;
+            width: 92%;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.4);
+            text-align: center;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            margin: 8px 0;
+            padding: 12px 16px;
+            background: #191e3b;
+            border: 1.5px solid #323b6b;
+            color: #ffffff;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            text-align: left;
+            line-height: 1.45;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #252d59;
+            border-color: #00f0ff;
+            transform: translateX(6px);
+        }
+
+        .credits {
+            position: absolute;
+            bottom: 20px;
+            right: 24px;
+            color: rgba(0, 240, 255, 0.85);
+            font-size: 0.95rem;
+            font-style: italic;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        }
+
+        .hud-bar {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .hud-card {
+            background: rgba(17, 20, 40, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            backdrop-filter: blur(6px);
+            padding: 6px 14px;
+            border-radius: 10px;
+            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+            pointer-events: auto;
+            font-size: 0.9rem;
+        }
+
+        .hud-btn {
+            background: rgba(17, 20, 40, 0.85);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+            pointer-events: auto;
+        }
+
+        .hud-btn:hover {
+            background: #00f0ff;
+            color: #080a14;
+            transform: scale(1.1);
+        }
+
+        .shop-item {
+            background: #191e3b;
+            border: 1px solid #323b6b;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .skin-card {
+            background: #191e3b;
+            border: 2px solid #323b6b;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .skin-card.selected {
+            border-color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+
+        .level-select-card {
+            background: #191e3b;
+            border: 2px solid #323b6b;
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .level-select-card:hover {
+            border-color: #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="hudLayer" class="hud-bar hidden">
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="hud-card font-bold">
+                Màn <span id="levelValue" class="text-cyan-400">1</span>/5 | Tiến độ: <span id="scoreValue" class="text-cyan-400">0</span>%
+            </div>
+            <div class="hud-card text-amber-300 font-bold">
+                🧪 Đồng xu: <span id="coinValue">0</span>
+            </div>
+            <div id="powerupStatus" class="hud-card text-emerald-300 hidden">
+                ⚡ <span id="powerupName">Khiên</span>: <span id="powerupTime">0</span>s
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div id="musicTrackBadge" class="hud-card text-cyan-300 hidden md:block">
+                🎵 <span id="trackName">Flash Beat</span>
+            </div>
+            <button id="settingsToggleBtn" class="hud-btn" onclick="window.openSettings()" title="Cài đặt">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+            <button id="soundToggleBtn" class="hud-btn" onclick="window.toggleAudio()" title="Bật/Tắt âm thanh">
+                <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsScreen" class="overlay hidden">
+        <div class="modal-box">
+            <div class="flex justify-between items-center mb-6 border-b border-cyan-500/30 pb-3">
+                <h2 class="text-xl font-bold text-cyan-300 font-game">CÀI ĐẶT ÂM THANH</h2>
+                <button class="text-slate-400 hover:text-white" onclick="window.closeSettings()"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="space-y-4 text-left mb-6">
+                <div class="flex justify-between items-center bg-[#191e3b] p-4 rounded-xl border border-[#323b6b]">
+                    <div>
+                        <span class="text-white font-medium block">Âm thanh tổng thể & Nhạc nền</span>
+                        <span class="text-xs text-slate-400">Bật hoặc tắt toàn bộ hiệu ứng âm thanh và nhạc trong game</span>
+                    </div>
+                    <button class="btn-main text-xs py-2 px-4" onclick="window.toggleAudio()">Bật / Tắt</button>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button class="btn-main btn-purple text-sm py-2 px-6" onclick="window.returnToMainMenu()">VỀ SẢNH CHÍNH</button>
+                <button class="btn-main text-sm py-2 px-6" onclick="window.closeSettings()">TIẾP TỤC CHƠI</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resumeCountdownOverlay" class="overlay-clear hidden">
+        <h1 id="countdownText" class="text-8xl font-game font-black text-cyan-400 drop-shadow-[0_0_20px_rgba(0,240,255,0.8)] animate-bounce">2</h1>
+        <p class="text-white mt-2 font-mono text-lg font-bold bg-black/50 px-4 py-1 rounded-full border border-cyan-400/40">CHUẨN BỊ...</p>
+    </div>
+
+    <!-- Title Screen -->
+    <div id="titleScreen" class="overlay">
+        <div class="text-center px-4 max-w-2xl">
+            <h1 class="text-3xl md:text-6xl font-game font-black mb-2 neon-title tracking-wider leading-tight">
+                GEOMETRY FLASH
+            </h1>
+            <p class="text-cyan-300 font-mono text-sm md:text-base font-bold mb-4">Nhảy-Bay-Nhịp điệu đỉnh cao</p>
+            <p class="text-slate-300 text-xs md:text-sm mb-6">Chinh phục 5 màn chơi tốc độ, mỗi màn chơi gọn gàng ~1 phút 30 giây!</p>
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-3 flex-wrap">
+                <button class="btn-main" onclick="window.startGame(1)">CHƠI NGAY</button>
+                <button class="btn-main btn-purple" onclick="window.openLevelSelect()">CHỌN MÀN</button>
+                <button class="btn-main bg-[#191e3b] text-cyan-300 border-cyan-500/50" onclick="window.openShop()">CỬA HÀNG</button>
+            </div>
+        </div>
+        <div class="credits font-game">Sản phẩm của nhóm Bỉ chú khảy</div>
+    </div>
+
+    <!-- Level Select Modal -->
+    <div id="levelSelectScreen" class="overlay hidden">
+        <div class="modal-box">
+            <div class="flex justify-between items-center mb-4 border-b border-cyan-500/30 pb-3">
+                <h2 class="text-xl font-bold text-cyan-300 font-game">CHỌN MÀN CHƠI</h2>
+                <button class="text-slate-400 hover:text-white" onclick="window.closeLevelSelect()"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6" id="levelGridContainer">
+                <div class="level-select-card" onclick="window.startGame(1)">
+                    <div class="text-cyan-400 font-game font-bold text-lg mb-1">Màn 1</div>
+                    <div class="text-xs text-slate-300">Khởi Đầu Nhịp Điệu (~1'30s)</div>
+                </div>
+                <div class="level-select-card" onclick="window.startGame(2)">
+                    <div class="text-cyan-400 font-game font-bold text-lg mb-1">Màn 2</div>
+                    <div class="text-xs text-slate-300">Tốc Độ Đẩy Nhanh (~1'30s)</div>
+                </div>
+                <div class="level-select-card" onclick="window.startGame(3)">
+                    <div class="text-cyan-400 font-game font-bold text-lg mb-1">Màn 3</div>
+                    <div class="text-xs text-slate-300">Vùng Không Gian Xanh (~1'30s)</div>
+                </div>
+                <div class="level-select-card" onclick="window.startGame(4)">
+                    <div class="text-cyan-400 font-game font-bold text-lg mb-1">Màn 4</div>
+                    <div class="text-xs text-slate-300">Thử Thách Ánh Kim (~1'30s)</div>
+                </div>
+                <div class="level-select-card sm:col-span-2 border-red-500/40 bg-red-950/20" onclick="window.startGame(5)">
+                    <div class="text-red-400 font-game font-bold text-lg mb-1">Màn 5: Trùm Cuối</div>
+                    <div class="text-xs text-slate-300">Titan Phản Ứng Oxi Hóa Khử</div>
+                </div>
+            </div>
+            <button class="btn-main text-sm py-2 px-6" onclick="window.closeLevelSelect()">QUAY LẠI</button>
+        </div>
+    </div>
+
+    <!-- Shop Screen -->
+    <div id="shopScreen" class="overlay hidden">
+        <div class="modal-box">
+            <div class="flex justify-between items-center mb-4 border-b border-cyan-500/30 pb-3">
+                <h2 class="text-xl font-bold text-cyan-300 font-game">CỬA HÀNG & TRANG PHỤC</h2>
+                <span class="text-amber-300 font-bold font-mono">🧪 <span id="shopCoins">0</span> xu</span>
+            </div>
+            <div class="text-left mb-4">
+                <h3 class="text-sm font-game text-slate-300 mb-2">Chọn Skin Hình Khối:</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="skinGridContainer"></div>
+            </div>
+            <div class="text-left mb-6">
+                <h3 class="text-sm font-game text-slate-300 mb-2">Nâng cấp & Hỗ trợ:</h3>
+                <div id="powerupShopList"></div>
+            </div>
+            <button class="btn-main text-sm py-2 px-6" onclick="window.closeShop()">TRỞ LẠI</button>
+        </div>
+    </div>
+
+    <!-- Boss Warning Screen -->
+    <div id="bossWarningScreen" class="overlay hidden bg-black/90">
+        <div class="text-center px-4 animate-pulse">
+            <h2 class="text-4xl md:text-6xl font-game font-black text-red-500 mb-4 neon-red">CẢNH BÁO: TRÙM CUỐI XUẤT HIỆN!</h2>
+            <p id="bossNameText" class="text-xl text-cyan-300 font-mono mb-6">Màn 5: Titan Phản Ứng Oxi Hóa Khử</p>
+            <p class="text-slate-300 text-sm mb-8">Né tránh các đợt phóng tia chớp năng lượng từ Boss để sinh tồn!</p>
+            <button class="btn-main btn-purple" onclick="window.startBossBattle()">CHIẾN ĐẤU NGAY</button>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="deathScreen" class="overlay hidden">
+        <h1 class="text-4xl md:text-6xl font-game font-black mb-4 neon-red text-center">BẠN ĐÃ THUA</h1>
+        <p class="text-slate-300 text-sm md:text-base mb-6 font-mono">Nhấn phím <span class="text-cyan-400 font-bold border border-cyan-500 px-2 py-1 rounded">R</span> để chơi lại nhanh</p>
+        <div class="flex flex-col sm:flex-row gap-4 items-center">
+            <button id="reviveBtn" class="btn-main btn-purple" onclick="window.showQuestion()">
+                Hồi sinh ngay <br>
+                <span class="text-xs md:text-sm tracking-normal normal-case opacity-90">(Trả lời câu hỏi Hóa học - 1 lần/lần thua)</span>
+            </button>
+            <button class="btn-main text-sm" onclick="window.restartGame()">CHƠI LẠI TỪ ĐẦU</button>
+        </div>
+        <div class="credits font-game">Sản phẩm của nhóm Bỉ chú khảy</div>
+    </div>
+
+    <!-- Win Screen -->
+    <div id="winScreen" class="overlay hidden">
+        <h1 class="text-4xl md:text-6xl font-game font-black mb-4 neon-title text-center">HOÀN THÀNH XUẤT SẮC!</h1>
+        <p class="text-cyan-300 text-base md:text-xl mb-6 font-mono" id="winStatsText">Bạn đã chinh phục toàn bộ các màn chơi Geometry Flash đỉnh cao!</p>
+        <div class="flex flex-col sm:flex-row gap-4 items-center">
+            <button class="btn-main" onclick="window.returnToMainMenu()">VỀ SẢNH CHÍNH</button>
+        </div>
+        <div class="credits font-game">Sản phẩm của nhóm Bỉ chú khảy</div>
+    </div>
+
+    <!-- Question Screen -->
+    <div id="questionScreen" class="overlay hidden">
+        <div class="modal-box">
+            <div class="flex justify-between items-center mb-4 border-b border-cyan-500/30 pb-3">
+                <h2 class="text-xl md:text-2xl font-bold text-cyan-300 font-game tracking-wide">CƠ HỘI HỒI SINH</h2>
+                <span class="text-xs bg-cyan-900/60 text-cyan-200 px-3 py-1 rounded-full font-mono border border-cyan-500/40">Hóa học THPT</span>
+            </div>
+            <p id="questionText" class="text-base md:text-lg mb-6 text-slate-100 font-medium text-left leading-relaxed"></p>
+            <div id="optionsContainer" class="flex flex-col"></div>
+            <div id="questionFeedback" class="mt-4 text-base md:text-lg font-bold hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let GAME_WIDTH = window.innerWidth;
+        let GAME_HEIGHT = window.innerHeight;
+        let floorY = GAME_HEIGHT * 0.78;
+
+        canvas.width = GAME_WIDTH;
+        canvas.height = GAME_HEIGHT;
+
+        window.addEventListener('resize', () => {
+            GAME_WIDTH = window.innerWidth;
+            GAME_HEIGHT = window.innerHeight;
+            canvas.width = GAME_WIDTH;
+            canvas.height = GAME_HEIGHT;
+            floorY = GAME_HEIGHT * 0.78;
+        });
+
+        // Config tốc độ cho từng level & giới hạn max speed
+        const LEVEL_BASE_SPEEDS = [7.0, 7.5, 8.0, 8.5, 9.0]; 
+        const GRAVITY = 0.95;
+        const JUMP_FORCE = -14.5;
+        const SHIP_THRUST = -0.95;
+
+        const STATE_TITLE = 'TITLE';
+        const STATE_PLAYING = 'PLAYING';
+        const STATE_PAUSED = 'PAUSED';
+        const STATE_BOSS_WARNING = 'BOSS_WARNING';
+        const STATE_BOSS_FIGHT = 'BOSS_FIGHT';
+        const STATE_DEAD = 'DEAD';
+        const STATE_QUESTION = 'QUESTION';
+        const STATE_WIN = 'WIN';
+        let currentState = STATE_TITLE;
+
+        let currentLevel = 1;
+        let maxLevels = 5;
+        let speed = LEVEL_BASE_SPEEDS[0];
+        let distance = 0;
+        let levelMaxDistance = 9000;
+        let coins = parseInt(localStorage.getItem('flash_coins') || '50');
+        let isHolding = false;
+        let obstacles = [];
+        let particles = [];
+        let floatingItems = [];
+        let backgroundStars = [];
+        let backgroundNebulas = [];
+
+        let isLoopRunning = false; // Flag quản lý duy nhất 1 loop requestAnimationFrame
+
+        let shakeIntensity = 0;
+        let shakeOffsetX = 0;
+        let shakeOffsetY = 0;
+
+        let activeShield = false;
+        let shieldTimer = 0;
+        let activeDoubleCoins = false;
+        let doubleCoinsTimer = 0;
+        let selectedSkinIndex = parseInt(localStorage.getItem('flash_skin') || '0');
+        let unlockedSkins = JSON.parse(localStorage.getItem('flash_unlocked') || '[0]');
+
+        let boss = {
+            x: 0,
+            y: 100,
+            width: 90,
+            height: 160,
+            hp: 100,
+            maxHp: 100,
+            attackTimer: 0,
+            projectiles: []
+        };
+
+        const THEMES = [
+            { bgTop: "#080a14", bgBottom: "#131b36", accent: "#00f0ff", grid: "rgba(0, 240, 255, 0.08)", floorBg: "#0c1021" },
+            { bgTop: "#12081f", bgBottom: "#27113a", accent: "#ff2a6d", grid: "rgba(255, 42, 109, 0.08)", floorBg: "#190d29" },
+            { bgTop: "#061a14", bgBottom: "#0e3328", accent: "#3ae374", grid: "rgba(58, 227, 116, 0.08)", floorBg: "#08211b" },
+            { bgTop: "#1f1704", bgBottom: "#3d2b07", accent: "#f59e0b", grid: "rgba(245, 158, 11, 0.08)", floorBg: "#211603" },
+            { bgTop: "#2b040d", bgBottom: "#4d0818", accent: "#ef4444", grid: "rgba(239, 68, 68, 0.08)", floorBg: "#24030a" }
+        ];
+
+        const PLAYER_SKINS = [
+            { name: "Cyan Cyber", primary: "#00f0ff", secondary: "#ff007f", price: 0 },
+            { name: "Emerald Bio", primary: "#3ae374", secondary: "#00f0ff", price: 50 },
+            { name: "Ruby Flame", primary: "#f43f5e", secondary: "#06b6d4", price: 100 },
+            { name: "Amethyst Void", primary: "#a855f7", secondary: "#3ae374", price: 150 },
+            { name: "Golden Atom", primary: "#eab308", secondary: "#ec4899", price: 250 }
+        ];
+
+        let currentTheme = THEMES[0];
+        let currentPlayerSkin = PLAYER_SKINS[selectedSkinIndex];
+
+        const MUSIC_TRACKS = [
+            { name: "Flash Beat", bpm: 132, keyScale: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25] },
+            { name: "Electro Dash", bpm: 140, keyScale: [220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00] },
+            { name: "Cyber Pulse", bpm: 128, keyScale: [196.00, 220.00, 233.08, 261.63, 293.66, 311.13, 349.23] }
+        ];
+
+        const chemistryQuestions = [
+            { q: "Este nào sau đây có công thức phân tử C4H8O2?", options: ["Ethyl acetate", "Methyl formate", "Vinyl acetate", "Benzyl acetate"], correct: 0 },
+            { q: "Chất nào sau đây thuộc loại đisaccarit?", options: ["Glucozơ", "Saccarozơ", "Tinh bột", "Xenlulozơ"], correct: 1 },
+            { q: "Công thức hóa học nào sau đây là của Triolein?", options: ["(C17H35COO)3C3H5", "(C17H33COO)3C3H5", "(C15H31COO)3C3H5", "(C17H31COO)3C3H5"], correct: 1 },
+            { q: "Amino axit nào sau đây có 2 nhóm carboxyl (-COOH) trong phân tử?", options: ["Alanin", "Glycin", "Axit glutamic", "Lysin"], correct: 2 },
+            { q: "Polime nào sau đây được điều chế bằng phản ứng trùng ngưng?", options: ["Tơ nilon-6,6", "Polietilen (PE)", "PVC", "Cao su buna"], correct: 0 },
+            { q: "Kim loại nào sau đây có tính dẫn điện tốt nhất trong tất cả các kim loại?", options: ["Đồng", "Vàng", "Bạc", "Nhôm"], correct: 2 },
+            { q: "Glucozơ KHÔNG phản ứng với chất nào sau đây?", options: ["H2 (Ni, t°)", "Cu(OH)2", "Dung dịch AgNO3/NH3", "Dung dịch NaOH"], correct: 3 },
+            { q: "Dung dịch chất nào sau đây làm quỳ tím chuyển sang màu xanh?", options: ["Anilin", "Methylamin", "Glycin", "Phenol"], correct: 1 },
+            { q: "Số liên kết peptit trong một phân tử tetrapeptit mạch hở là bao nhiêu?", options: ["4", "3", "2", "1"], correct: 1 },
+            { q: "Kim loại nào tác dụng với nước ở nhiệt độ thường tạo dung dịch kiềm và khí H2?", options: ["Fe", "Cu", "Na", "Ag"], correct: 2 },
+            { q: "Chất nào sau đây là chất khí ở điều kiện thường?", options: ["Methylamin", "Anilin", "Glycin", "Alanin"], correct: 0 },
+            { q: "Dung dịch nào sau đây hòa tan được Cu(OH)2 ở điều kiện thường tạo dung dịch màu xanh lam?", options: ["Xenlulozơ", "Saccarozơ", "Etverständlich", "Polietilen"], correct: 1 },
+            { q: "Phản ứng hóa học nào dùng để sản xuất xà phòng?", options: ["Xà phòng hóa chất béo trong dung dịch kiềm", "Trùng hợp etilen", "Este hóa axit và ancol", "Cracking hiđrocacbon"], correct: 0 },
+            { q: "Kim loại nào sau đây thuộc nhóm IIA?", options: ["Na", "Ba", "Al", "Fe"], correct: 1 },
+            { q: "Chất nào sau đây có tính lưỡng tính?", options: ["NaOH", "HCl", "Al(OH)3", "NaCl"], correct: 2 },
+            { q: "Khí thải nào gây hiệu ứng nhà kính mạnh nhất?", options: ["CO2", "O2", "N2", "H2"], correct: 0 },
+            { q: "Số nguyên tử carbon trong phân tử Fructozơ là bao nhiêu?", options: ["5", "6", "12", "2"], correct: 1 },
+            { q: "Dung dịch axit nào sau đây ăn mòn được thủy tinh?", options: ["HCl", "H2SO4", "HF", "HNO3"], correct: 2 },
+            { q: "Kim loại nào mềm nhất trong bảng hệ thống tuần hoàn?", options: ["Cs", "Na", "K", "Li"], correct: 0 },
+            { q: "Tên gọi của định luật bảo toàn khối lượng do ai phát hiện?", options: ["Lomonosov - Lavoisier", "Dalton", "Mendeleev", "Avogadro"], correct: 0 },
+            { q: "Quặng bauxite là nguyên liệu chính để sản xuất kim loại nào?", options: ["Sắt", "Nhôm", "Đồng", "Kẽm"], correct: 1 },
+            { q: "Nước cứng tạm thời chứa các ion nào?", options: ["Ca2+, Mg2+, HCO3-", "Ca2+, Mg2+, Cl-, SO42-", "Na+, K+", "Ba2+, OH-"], correct: 0 },
+            { q: "Để loại bỏ ion Ca2+, Mg2+ trong nước cứng toàn phần, người ta dùng hóa chất nào?", options: ["Na2CO3 và Na3PO4", "NaCl", "HCl", "H2SO4"], correct: 0 },
+            { q: "Tính bazơ của các amin nào sau đây mạnh nhất?", options: ["Anilin", "Methylamin", "Dimethylamin", "Amonia"], correct: 2 },
+            { q: "Chất nào sau đây tác dụng với dung dịch HNO3 đặc nóng giải phóng khí NO2?", options: ["Au", "Pt", "Cu", "AgCl"], correct: 2 },
+            { q: "Phản ứng trùng hợp tạo ra polime nào sau đây?", options: ["Polietilen (PE)", "Nilon-6,6", "Tơ tằm", "Protein"], correct: 0 },
+            { q: "Dung dịch nào sau đây làm đổi màu phenolphtalein thành hồng?", options: ["HCl", "NaOH", "NaCl", "CH3COOH"], correct: 1 },
+            { q: "Kim loại nào không tác dụng với dung dịch H2SO4 loãng?", options: ["Fe", "Zn", "Al", "Cu"], correct: 3 },
+            { q: "Chất nào sau đây không tham gia phản ứng tráng bạc?", options: ["Glucozơ", "Fructozơ", "Saccarozơ", "Andehit acetic"], correct: 2 },
+            { q: "Số liên kết pi (π) trong phân tử axit acrylic là bao nhiêu?", options: ["1", "2", "3", "0"], correct: 1 },
+            { q: "Chất béo là hỗn hợp các... của glixerol với axit béo.", options: ["este", "ete", "ancol", "axit"], correct: 0 },
+            { q: "Kim loại nào sau đây có nhiệt độ nóng chảy cao nhất?", options: ["W (Vonfram)", "Fe", "Cu", "Hg"], correct: 0 },
+            { q: "Phèn chua có công thức hóa học là gì?", options: ["K2SO4.Al2(SO4)3.24H2O", "Na2SO4.Al2(SO4)3.24H2O", "FeSO4.7H2O", "CaSO4.2H2O"], correct: 0 },
+            { q: "Chất nào sau đây được dùng làm phân đạm?", options: ["NH4NO3", "KCl", "Ca3(PO4)2", "K2SO4"], correct: 0 },
+            { q: "Oxit nào sau đây là oxit bazơ?", options: ["CO2", "SO2", "Na2O", "P2O5"], correct: 2 },
+            { q: "Kim loại tác dụng với khí clo ở nhiệt độ cao tạo ra muối gì?", options: ["Clorua hóa trị cao", "Clorua hóa trị thấp", "Hiđroxit", "Oxit"], correct: 0 },
+            { q: "Chất nào sau đây dùng để chữa bệnh đau dạ dày (dư axit)?", options: ["NaHCO3", "NaCl", "Na2SO4", "KNO3"], correct: 0 },
+            { q: "Hiện tượng mưa axit chủ yếu do các khí nào gây ra?", options: ["SO2 và NO2", "CO2 và CH4", "O3 và H2", "NH3 và CO"], correct: 0 },
+            { q: "Sự điện phân dung dịch CuSO4 với điện cực trơ thu được khí gì ở anot?", options: ["O2", "H2", "Cl2", "SO2"], correct: 0 },
+            { q: "Chất khí nào sau đây gây ngạt và không màu, không mùi?", options: ["CO", "Cl2", "NO2", "H2S"], correct: 0 },
+            { q: "Hợp chất nào của sắt vừa có tính oxi hóa vừa có tính khử?", options: ["FeO", "Fe2O3", "FeCl3", "FeSO4"], correct: 0 },
+            { q: "Chất nào sau đây làm mất màu dung dịch nước brom?", options: ["Etilen", "Metan", "Etan", "Benzen"], correct: 0 },
+            { q: "Dung dịch nào sau đây dẫn điện được?", options: ["Dung dịch đường", "Dung dịch muối ăn", "Dung dịch rượu etylic", "Nước cất"], correct: 1 },
+            { q: "Tên quốc tế (IUPAC) của axit acetic là gì?", options: ["Axit etanoic", "Axit metanoic", "Axit propanoic", "Axit acrylic"], correct: 0 },
+            { q: "Chất nào sau đây có phản ứng màu biuret?", options: ["Tripeptit", "Glucozơ", "Etilen glicol", "Metyl axetat"], correct: 0 },
+            { q: "Kim loại nào điều chế được bằng phương pháp thủy luyện?", options: ["Cu", "Na", "Mg", "Al"], correct: 0 },
+            { q: "Phản ứng giữa axit và ancol thuộc loại phản ứng gì?", options: ["Este hóa", "Trùng hợp", "Thủy phân", "Cracking"], correct: 0 },
+            { q: "Chất rắn màu trắng, dễ tan trong nước, hút ẩm mạnh và dùng làm chất khô là...", options: ["P2O5", "NaCl", "CaCO3", "BaSO4"], correct: 0 },
+            { q: "Kim loại kiềm thổ tác dụng với nước ở nhiệt độ cao hoặc thường tùy thuộc vào...", options: ["bản chất kim loại", "áp suất", "thể tích", "nhiệt độ"], correct: 0 },
+            { q: "Khí sinh ra khi cho nhôm tác dụng với dung dịch NaOH là...", options: ["H2", "O2", "CO2", "NH3"], correct: 0 }
+        ];
+
+        let currentQuestionObj = null;
+
+        const player = {
+            x: 200,
+            y: 0,
+            width: 36,
+            height: 36,
+            dy: 0,
+            mode: 'CUBE',
+            rotation: 0,
+            color: '#00f0ff',
+            secondaryColor: '#ff007f',
+            isGrounded: false,
+            invincible: false,
+            invincibleTimer: 0,
+            
+            reset() {
+                this.x = GAME_WIDTH * 0.18;
+                this.y = floorY - this.height;
+                this.dy = 0;
+                this.mode = 'CUBE';
+                this.rotation = 0;
+                this.invincible = false;
+                this.invincibleTimer = 0;
+                currentPlayerSkin = PLAYER_SKINS[selectedSkinIndex];
+                this.color = currentPlayerSkin.primary;
+                this.secondaryColor = currentPlayerSkin.secondary;
+            },
+
+            jump(force = JUMP_FORCE) {
+                if (this.mode === 'CUBE' && this.isGrounded) {
+                    this.dy = force;
+                    this.isGrounded = false;
+                    playSFX('jump');
+                }
+            },
+
+            update() {
+                if (this.mode === 'CUBE') {
+                    this.dy += GRAVITY;
+                    this.y += this.dy;
+
+                    let onAnyBlock = false;
+                    obstacles.forEach(obs => {
+                        if (obs.type === 'BLOCK') {
+                            if (this.x + this.width > obs.x && this.x < obs.x + obs.width) {
+                                if (this.y + this.height >= obs.y && this.y + this.height - this.dy <= obs.y + 16) {
+                                    this.y = obs.y - this.height;
+                                    this.dy = 0;
+                                    this.isGrounded = true;
+                                    onAnyBlock = true;
+                                    const nearest90 = Math.round(this.rotation / (Math.PI / 2)) * (Math.PI / 2);
+                                    this.rotation = nearest90;
+                                }
+                            }
+                        }
+                    });
+
+                    if (!onAnyBlock) {
+                        if (this.y + this.height >= floorY) {
+                            this.y = floorY - this.height;
+                            this.dy = 0;
+                            this.isGrounded = true;
+                            const nearest90 = Math.round(this.rotation / (Math.PI / 2)) * (Math.PI / 2);
+                            this.rotation = nearest90;
+                        } else {
+                            this.isGrounded = false;
+                            this.rotation += 0.22;
+                        }
+                    }
+
+                    if (isHolding && this.isGrounded) {
+                        this.jump();
+                    }
+                } 
+                else if (this.mode === 'SHIP') {
+                    let levelGravityFactor = 1.0;
+                    let thrustFactor = SHIP_THRUST;
+                    if (currentLevel >= 2) {
+                        levelGravityFactor = 1.2 + (currentLevel - 2) * 0.15;
+                        thrustFactor = SHIP_THRUST * 1.15;
+                    }
+
+                    if (isHolding) {
+                        this.dy += thrustFactor;
+                    } else {
+                        this.dy += GRAVITY * 0.55 * levelGravityFactor;
+                    }
+                    
+                    if (this.dy > 9.5) this.dy = 9.5;
+                    if (this.dy < -9.5) this.dy = -9.5;
+                    
+                    this.y += this.dy;
+                    this.rotation = this.dy * 0.06;
+
+                    if (this.y < 10) {
+                        this.y = 10;
+                        this.dy = 0;
+                    }
+                    if (this.y + this.height > floorY) {
+                        this.y = floorY - this.height;
+                        this.dy = 0;
+                    }
+                }
+
+                if (this.invincible) {
+                    this.invincibleTimer--;
+                    if (this.invincibleTimer <= 0) {
+                        this.invincible = false;
+                    }
+                }
+
+                if (activeShield) {
+                    shieldTimer--;
+                    if (shieldTimer <= 0) {
+                        activeShield = false;
+                        document.getElementById('powerupStatus').classList.add('hidden');
+                    } else {
+                        document.getElementById('powerupTime').innerText = Math.ceil(shieldTimer / 60);
+                    }
+                }
+
+                if (activeDoubleCoins) {
+                    doubleCoinsTimer--;
+                    if (doubleCoinsTimer <= 0) {
+                        activeDoubleCoins = false;
+                    }
+                }
+                
+                if (Math.random() > 0.3) {
+                    createParticle(this.x, this.y + this.height - 4, this.mode === 'CUBE' ? this.color : this.secondaryColor);
+                }
+            },
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.width/2, this.y + this.height/2);
+                ctx.rotate(this.rotation);
+                
+                if ((this.invincible || activeShield) && Math.floor(Date.now() / 100) % 2 === 0) {
+                    ctx.globalAlpha = 0.5;
+                }
+
+                if (activeShield) {
+                    ctx.strokeStyle = '#3ae374';
+                    ctx.lineWidth = 3;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#3ae374';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.width * 0.85, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+                
+                if (this.mode === 'CUBE') {
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = this.color;
+                    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                    
+                    ctx.fillStyle = this.secondaryColor;
+                    ctx.fillRect(-this.width/4, -this.height/4, this.width/2, this.height/2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(-this.width/8, -this.height/8, this.width/4, this.width/4);
+                } else if (this.mode === 'SHIP') {
+                    ctx.fillStyle = this.secondaryColor;
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = this.secondaryColor;
+                    ctx.beginPath();
+                    ctx.moveTo(this.width/2 + 6, 0);
+                    ctx.lineTo(-this.width/2, this.height/2);
+                    ctx.lineTo(-this.width/4, 0);
+                    ctx.lineTo(-this.width/2, -this.height/2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    if (isHolding) {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.moveTo(-this.width/4, 0);
+                        ctx.lineTo(-this.width - 10, (Math.random() - 0.5) * 14);
+                        ctx.lineTo(-this.width/2, (Math.random() - 0.5) * 8);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+                
+                ctx.restore();
+            }
+        };
+
+        function initAudio() {
+            try {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch(e) {}
+        }
+
+        let audioCtx = null;
+        let isMuted = false;
+        let musicTimer = null;
+        let currentTrackIndex = 0;
+        let musicStep = 0;
+
+        function toggleAudio() {
+            isMuted = !isMuted;
+            const icon = document.getElementById('soundIcon');
+            if (isMuted) {
+                icon.className = 'fa-solid fa-volume-xmark';
+                if (musicTimer) clearInterval(musicTimer);
+            } else {
+                icon.className = 'fa-solid fa-volume-high';
+                if (currentState === STATE_PLAYING || currentState === STATE_BOSS_FIGHT) startMusicTrack();
+            }
+        }
+        window.toggleAudio = toggleAudio;
+
+        function openSettings() {
+            if (currentState === STATE_PLAYING || currentState === STATE_BOSS_FIGHT) {
+                currentState = STATE_PAUSED;
+                if (musicTimer) clearInterval(musicTimer);
+            }
+            document.getElementById('settingsScreen').classList.remove('hidden');
+        }
+        window.openSettings = openSettings;
+
+        function closeSettings() {
+            document.getElementById('settingsScreen').classList.add('hidden');
+            if (currentState === STATE_PAUSED) {
+                currentState = STATE_PLAYING;
+                startMusicTrack();
+            }
+        }
+        window.closeSettings = closeSettings;
+
+        function returnToMainMenu() {
+            document.getElementById('settingsScreen').classList.add('hidden');
+            document.getElementById('winScreen').classList.add('hidden');
+            document.getElementById('hudLayer').classList.add('hidden');
+            document.getElementById('titleScreen').classList.remove('hidden');
+            if (musicTimer) clearInterval(musicTimer);
+            currentState = STATE_TITLE;
+        }
+        window.returnToMainMenu = returnToMainMenu;
+
+        function openLevelSelect() {
+            document.getElementById('levelSelectScreen').classList.remove('hidden');
+        }
+        window.openLevelSelect = openLevelSelect;
+
+        function closeLevelSelect() {
+            document.getElementById('levelSelectScreen').classList.add('hidden');
+        }
+        window.closeLevelSelect = closeLevelSelect;
+
+        function playTone(freq, type, duration, vol = 0.1) {
+            if (isMuted || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playSFX(type) {
+            if (isMuted || !audioCtx) return;
+            if (type === 'jump') {
+                playTone(360, 'square', 0.08, 0.15);
+                setTimeout(() => playTone(540, 'square', 0.1, 0.12), 30);
+            } else if (type === 'pad') {
+                playTone(600, 'sine', 0.15, 0.2);
+                setTimeout(() => playTone(900, 'sine', 0.2, 0.2), 50);
+            } else if (type === 'crash') {
+                playTone(100, 'sawtooth', 0.4, 0.35);
+                playTone(70, 'square', 0.45, 0.35);
+            } else if (type === 'portal') {
+                playTone(550, 'sine', 0.12, 0.15);
+                setTimeout(() => playTone(820, 'sine', 0.2, 0.15), 60);
+            } else if (type === 'coin') {
+                playTone(880, 'sine', 0.1, 0.2);
+                setTimeout(() => playTone(1320, 'sine', 0.15, 0.2), 80);
+            } else if (type === 'correct') {
+                playTone(523.25, 'sine', 0.15, 0.2);
+                setTimeout(() => playTone(659.25, 'sine', 0.2, 0.2), 120);
+            } else if (type === 'wrong') {
+                playTone(220, 'sawtooth', 0.2, 0.25);
+                setTimeout(() => playTone(164.81, 'sawtooth', 0.3, 0.25), 150);
+            } else if (type === 'win') {
+                playTone(523.25, 'triangle', 0.2, 0.25);
+                setTimeout(() => playTone(659.25, 'triangle', 0.2, 0.25), 150);
+                setTimeout(() => playTone(783.99, 'triangle', 0.2, 0.25), 300);
+                setTimeout(() => playTone(1046.50, 'triangle', 0.4, 0.3), 450);
+            }
+        }
+
+        function startMusicTrack() {
+            if (musicTimer) clearInterval(musicTimer);
+            if (isMuted) return;
+            
+            const track = MUSIC_TRACKS[currentTrackIndex];
+            document.getElementById('trackName').innerText = track.name;
+            const interval = (60 / track.bpm / 2) * 1000;
+            musicStep = 0;
+
+            musicTimer = setInterval(() => {
+                if ((currentState !== STATE_PLAYING && currentState !== STATE_BOSS_FIGHT) || isMuted) return;
+                
+                const scale = track.keyScale;
+                const note = scale[musicStep % scale.length];
+                const bassNote = scale[0] / 2;
+
+                if (musicStep % 2 === 0) {
+                    playTone(bassNote, 'triangle', 0.15, 0.08);
+                }
+                playTone(note, 'sine', 0.1, 0.05);
+
+                musicStep++;
+            }, interval);
+        }
+
+        function createParticle(x, y, color) {
+            particles.push({
+                x: x,
+                y: y,
+                vx: -speed * 0.45 + (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2.5,
+                size: Math.random() * 5 + 2,
+                life: 1.0,
+                color: color
+            });
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.03;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.restore();
+            });
+        }
+
+        function initBackground() {
+            backgroundStars = [];
+            for (let i = 0; i < 60; i++) {
+                backgroundStars.push({
+                    x: Math.random() * GAME_WIDTH,
+                    y: Math.random() * floorY,
+                    size: Math.random() * 2.8 + 1,
+                    speed: Math.random() * 0.5 + 0.2
+                });
+            }
+            backgroundNebulas = [];
+            for (let i = 0; i < 4; i++) {
+                backgroundNebulas.push({
+                    x: Math.random() * GAME_WIDTH,
+                    y: Math.random() * (floorY - 100),
+                    radius: Math.random() * 180 + 120,
+                    speed: 0.2
+                });
+            }
+        }
+
+        function drawBackground() {
+            const gradient = ctx.createLinearGradient(0, 0, 0, floorY);
+            gradient.addColorStop(0, currentTheme.bgTop);
+            gradient.addColorStop(1, currentTheme.bgBottom);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+            backgroundNebulas.forEach(neb => {
+                neb.x -= neb.speed * 0.6;
+                if (neb.x < -neb.radius) neb.x = GAME_WIDTH + neb.radius;
+                const radGrad = ctx.createRadialGradient(neb.x, neb.y, 10, neb.x, neb.y, neb.radius);
+                radGrad.addColorStop(0, currentTheme.accent);
+                radGrad.addColorStop(1, 'transparent');
+                ctx.save();
+                ctx.globalAlpha = 0.08;
+                ctx.fillStyle = radGrad;
+                ctx.beginPath();
+                ctx.arc(neb.x, neb.y, neb.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+            
+            ctx.strokeStyle = currentTheme.grid;
+            ctx.lineWidth = 1;
+            const gridSpacing = 60;
+            const offsetX = (distance % gridSpacing);
+            
+            for (let x = -offsetX; x < GAME_WIDTH; x += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, floorY);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = currentTheme.floorBg;
+            ctx.fillRect(0, floorY, GAME_WIDTH, GAME_HEIGHT - floorY);
+            
+            ctx.strokeStyle = currentTheme.accent;
+            ctx.lineWidth = 3.5;
+            ctx.shadowBlur = 16;
+            ctx.shadowColor = currentTheme.accent;
+            ctx.beginPath();
+            ctx.moveTo(0, floorY);
+            ctx.lineTo(GAME_WIDTH, floorY);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = '#ffffff';
+            backgroundStars.forEach(star => {
+                star.x -= star.speed * speed * 0.35;
+                if (star.x < 0) {
+                    star.x = GAME_WIDTH;
+                    star.y = Math.random() * floorY;
+                }
+                ctx.globalAlpha = 0.4;
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
+            ctx.globalAlpha = 1.0;
+        }
+
+        function generateMapForLevel(level) {
+            obstacles = [];
+            floatingItems = [];
+            let x = 600;
+            let totalObstaclesTarget = 35; 
+
+            for (let i = 0; i < totalObstaclesTarget; i++) {
+                if (i === 10 || i === 24) {
+                    obstacles.push({ type: 'PORTAL', x: x, y: 0, width: 50, height: floorY, targetMode: 'SHIP', passed: false });
+                    x += 250;
+                } else if (i === 16 || i === 30) {
+                    obstacles.push({ type: 'PORTAL', x: x, y: 0, width: 50, height: floorY, targetMode: 'CUBE', passed: false });
+                    x += 250;
+                }
+
+                let obsTypeRand = Math.random();
+                if (obsTypeRand < 0.35) {
+                    obstacles.push({ type: 'SPIKE', x: x, y: floorY - 36, width: 32, height: 36 });
+                } else if (obsTypeRand < 0.6) {
+                    obstacles.push({ type: 'BLOCK', x: x, y: floorY - 45, width: 45, height: 45 });
+                    if (Math.random() > 0.5) {
+                        obstacles.push({ type: 'SPIKE', x: x + 8, y: floorY - 36 - 45, width: 30, height: 36 });
+                    }
+                } else if (obsTypeRand < 0.8) {
+                    obstacles.push({
+                        type: 'MOVING_SAW',
+                        x: x,
+                        y: floorY * 0.45,
+                        width: 55,
+                        height: 55,
+                        angle: 0,
+                        speedY: (i % 2 === 0) ? 2.5 : -2.5,
+                        minY: floorY * 0.18,
+                        maxY: floorY * 0.72
+                    });
+                } else {
+                    obstacles.push({ type: 'CEILING_SPIKE', x: x, y: 0, width: 35, height: 45 });
+                    obstacles.push({ type: 'SPIKE', x: x, y: floorY - 45, width: 35, height: 45 });
+                }
+
+                if (i % 3 === 0) {
+                    spawnCoin(x + 10, floorY * 0.5);
+                }
+
+                x += 260;
+            }
+
+            levelMaxDistance = x + 300;
+        }
+
+        function spawnCoin(x, y) {
+            floatingItems.push({
+                x: x,
+                y: y,
+                width: 26,
+                height: 26,
+                collected: false
+            });
+        }
+
+        function updateObstaclesAndItems() {
+            if (player.mode === 'SHIP') {
+                let intensityBase = currentLevel * 2.0; 
+                shakeOffsetX = (Math.random() - 0.5) * intensityBase;
+                shakeOffsetY = (Math.random() - 0.5) * intensityBase;
+            } else {
+                shakeOffsetX = 0;
+                shakeOffsetY = 0;
+            }
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.x -= speed;
+
+                if (obs.type === 'SAW' || obs.type === 'MOVING_SAW') {
+                    obs.angle += 0.14;
+                }
+
+                if (obs.type === 'MOVING_SAW') {
+                    obs.y += obs.speedY;
+                    if (obs.y < obs.minY || obs.y > obs.maxY) {
+                        obs.speedY *= -1;
+                    }
+                }
+
+                if (obs.type === 'PORTAL' && !obs.passed) {
+                    if (player.x + player.width > obs.x && player.x < obs.x + obs.width) {
+                        obs.passed = true;
+                        player.mode = obs.targetMode;
+                        playSFX('portal');
+                    }
+                }
+
+                if (!player.invincible && obs.type !== 'PORTAL') {
+                    if (checkCollision(player, obs)) {
+                        if (obs.type === 'BLOCK' && player.y + player.height - player.dy <= obs.y + 16) {
+                            // Safe landing
+                        } else {
+                            if (activeShield) {
+                                activeShield = false;
+                                document.getElementById('powerupStatus').classList.add('hidden');
+                                obstacles.splice(i, 1);
+                                playSFX('crash');
+                                continue;
+                            }
+                            handleGameOver();
+                            return;
+                        }
+                    }
+                }
+
+                if (obs.x + obs.width < -150) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            for (let i = floatingItems.length - 1; i >= 0; i--) {
+                let item = floatingItems[i];
+                item.x -= speed;
+
+                if (!item.collected && checkCollision(player, item)) {
+                    item.collected = true;
+                    let coinGain = activeDoubleCoins ? 2 : 1;
+                    coins += coinGain;
+                    localStorage.setItem('flash_coins', coins);
+                    document.getElementById('coinValue').innerText = coins;
+                    playSFX('coin');
+                }
+
+                if (item.x + item.width < -50 || item.collected) {
+                    floatingItems.splice(i, 1);
+                }
+            }
+        }
+
+        function checkCollision(p, o) {
+            const marginX = 6;
+            const marginY = 4;
+            return (
+                p.x + marginX < o.x + o.width &&
+                p.x + p.width - marginX > o.x &&
+                p.y + marginY < o.y + o.height &&
+                p.y + p.height - marginY > o.y
+            );
+        }
+
+        function drawObstaclesAndItems() {
+            obstacles.forEach(obs => {
+                if (obs.type === 'SPIKE') {
+                    ctx.fillStyle = '#ff2a6d';
+                    ctx.shadowBlur = 14;
+                    ctx.shadowColor = '#ff2a6d';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x, obs.y + obs.height);
+                    ctx.lineTo(obs.x + obs.width / 2, obs.y);
+                    ctx.lineTo(obs.x + obs.width, obs.y + obs.height);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else if (obs.type === 'CEILING_SPIKE') {
+                    ctx.fillStyle = '#ff2a6d';
+                    ctx.shadowBlur = 14;
+                    ctx.shadowColor = '#ff2a6d';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x, obs.y);
+                    ctx.lineTo(obs.x + obs.width / 2, obs.y + obs.height);
+                    ctx.lineTo(obs.x + obs.width, obs.y);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else if (obs.type === 'BLOCK') {
+                    ctx.fillStyle = '#1e293b';
+                    ctx.strokeStyle = currentTheme.accent;
+                    ctx.lineWidth = 2;
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = currentTheme.accent;
+                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                    ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+                    ctx.shadowBlur = 0;
+                } else if (obs.type === 'SAW' || obs.type === 'MOVING_SAW') {
+                    ctx.save();
+                    ctx.translate(obs.x + obs.width/2, obs.y + obs.height/2);
+                    ctx.rotate(obs.angle);
+                    ctx.fillStyle = obs.type === 'MOVING_SAW' ? '#ef4444' : '#ff2a6d';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.beginPath();
+                    for (let s = 0; s < 8; s++) {
+                        ctx.rotate(Math.PI / 4);
+                        ctx.fillRect(-4, -obs.height/2, 8, obs.height);
+                    }
+                    ctx.arc(0, 0, obs.width/3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                } else if (obs.type === 'PORTAL') {
+                    const portalColor = obs.targetMode === 'SHIP' ? '#ff007f' : '#00f0ff';
+                    ctx.strokeStyle = portalColor;
+                    ctx.lineWidth = 4;
+                    ctx.shadowBlur = 22;
+                    ctx.shadowColor = portalColor;
+                    ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+                    
+                    ctx.fillStyle = portalColor;
+                    ctx.globalAlpha = 0.18;
+                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                    ctx.globalAlpha = 1.0;
+                    ctx.shadowBlur = 0;
+                }
+            });
+
+            floatingItems.forEach(item => {
+                ctx.save();
+                ctx.translate(item.x + item.width/2, item.y + item.height/2);
+                ctx.fillStyle = '#f59e0b';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#f59e0b';
+                ctx.beginPath();
+                ctx.arc(0, 0, item.width/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('H+', 0, 0);
+                ctx.restore();
+            });
+        }
+
+        function updateBossBattle() {
+            boss.attackTimer++;
+            if (boss.attackTimer > 65) {
+                boss.attackTimer = 0;
+                boss.projectiles.push({
+                    x: boss.x,
+                    y: boss.y + boss.height / 2 + (Math.random() - 0.5) * 110,
+                    width: 38,
+                    height: 18,
+                    speed: 9.5
+                });
+            }
+
+            for (let i = boss.projectiles.length - 1; i >= 0; i--) {
+                let p = boss.projectiles[i];
+                p.x -= p.speed;
+
+                if (!player.invincible && checkCollision(player, p)) {
+                    if (activeShield) {
+                        activeShield = false;
+                        document.getElementById('powerupStatus').classList.add('hidden');
+                        boss.projectiles.splice(i, 1);
+                        playSFX('crash');
+                        continue;
+                    }
+                    handleGameOver();
+                    return;
+                }
+
+                if (p.x + p.width < 0) {
+                    boss.projectiles.splice(i, 1);
+                }
+            }
+
+            boss.hp -= 0.12;
+            if (boss.hp <= 0) {
+                handleVictory();
+            }
+        }
+
+        function drawBossBattle() {
+            boss.x = GAME_WIDTH - 140;
+            boss.y = floorY - boss.height - 20;
+
+            ctx.fillStyle = '#b400ff';
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = '#b400ff';
+            ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillRect(boss.x - 10, boss.y + 20, 10, boss.height - 40);
+            ctx.shadowBlur = 0;
+
+            boss.projectiles.forEach(p => {
+                ctx.fillStyle = '#ff2a6d';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff2a6d';
+                ctx.beginPath();
+                ctx.ellipse(p.x + p.width/2, p.y + p.height/2, p.width/2, p.height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(GAME_WIDTH / 2 - 150, 40, 300, 20);
+            ctx.fillStyle = '#ff2a6d';
+            ctx.fillRect(GAME_WIDTH / 2 - 150, 40, 300 * (boss.hp / boss.maxHp), 20);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(GAME_WIDTH / 2 - 150, 40, 300, 20);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText('TRÙM CUỐI: TITAN OXI HÓA KHỬ (' + Math.ceil(boss.hp) + '%)', GAME_WIDTH / 2, 75);
+        }
+
+        function handleGameOver() {
+            playSFX('crash');
+            currentState = STATE_DEAD;
+            document.getElementById('hudLayer').classList.add('hidden');
+            document.getElementById('deathScreen').classList.remove('hidden');
+        }
+
+        function handleVictory() {
+            playSFX('win');
+            if (currentLevel < maxLevels) {
+                currentLevel++;
+                startLevelTransition();
+            } else {
+                currentState = STATE_WIN;
+                if (musicTimer) clearInterval(musicTimer);
+                document.getElementById('hudLayer').classList.add('hidden');
+                document.getElementById('winStatsText').innerText = `Bạn đã chinh phục toàn bộ ${maxLevels} màn chơi Geometry Flash! Tổng số xu: ${coins}`;
+                document.getElementById('winScreen').classList.remove('hidden');
+            }
+        }
+
+        function startLevelTransition() {
+            currentState = STATE_TITLE;
+            if (musicTimer) clearInterval(musicTimer);
+            document.getElementById('hudLayer').classList.add('hidden');
+            
+            if (currentLevel === 5) {
+                document.getElementById('bossNameText').innerText = "Màn 5: Trùm Cuối - Titan Phản Ứng";
+                document.getElementById('bossWarningScreen').classList.remove('hidden');
+            } else {
+                alert(`Chúc mừng hoàn thành màn ${currentLevel - 1}! Tiếp tục sang Màn ${currentLevel}`);
+                startGame(currentLevel);
+            }
+        }
+
+        function startBossBattle() {
+            document.getElementById('bossWarningScreen').classList.add('hidden');
+            document.getElementById('hudLayer').classList.remove('hidden');
+            currentTheme = THEMES[4];
+            player.reset();
+            boss.hp = 100;
+            boss.projectiles = [];
+            currentState = STATE_BOSS_FIGHT;
+            startMusicTrack();
+        }
+        window.startBossBattle = startBossBattle;
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+            ctx.save();
+            ctx.translate(shakeOffsetX, shakeOffsetY);
+
+            if (currentState === STATE_PLAYING) {
+                distance += speed;
+                
+                // Đã sửa: Tính toán tốc độ chuẩn từ Base Speed từng level + Tăng nhẹ theo khoảng cách (Có giới hạn Max Speed)
+                const baseSpd = LEVEL_BASE_SPEEDS[currentLevel - 1] || 7.0;
+                const maxSpd = baseSpd + 2.5; // Giới hạn tốc độ không tăng quá mức
+                speed = Math.min(maxSpd, baseSpd + (distance / 35000));
+
+                let currentPercentage = Math.min(100, Math.floor((distance / levelMaxDistance) * 100));
+
+                if (currentPercentage >= 100) {
+                    handleVictory();
+                }
+
+                player.update();
+                updateObstaclesAndItems();
+                updateParticles();
+
+                document.getElementById('scoreValue').innerText = currentPercentage;
+            } else if (currentState === STATE_BOSS_FIGHT) {
+                player.update();
+                updateBossBattle();
+                updateParticles();
+            }
+
+            drawBackground();
+            drawParticles();
+            
+            if (currentState === STATE_PLAYING || currentState === STATE_PAUSED) {
+                drawObstaclesAndItems();
+            } else if (currentState === STATE_BOSS_FIGHT) {
+                drawBossBattle();
+            }
+
+            if (currentState === STATE_PLAYING || currentState === STATE_PAUSED || currentState === STATE_BOSS_FIGHT || currentState === STATE_DEAD || currentState === STATE_WIN) {
+                player.draw();
+            }
+
+            ctx.restore();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame(levelNum = 1) {
+            initAudio();
+            currentLevel = levelNum;
+            document.getElementById('titleScreen').classList.add('hidden');
+            document.getElementById('levelSelectScreen').classList.add('hidden');
+            document.getElementById('deathScreen').classList.add('hidden');
+            document.getElementById('winScreen').classList.add('hidden');
+            document.getElementById('hudLayer').classList.remove('hidden');
+            
+            if (currentLevel === 5) {
+                document.getElementById('bossNameText').innerText = "Màn 5: Trùm Cuối - Titan Phản Ứng";
+                document.getElementById('bossWarningScreen').classList.remove('hidden');
+                return;
+            }
+
+            restartGame();
+        }
+        window.startGame = startGame;
+
+        function openShop() {
+            document.getElementById('shopCoins').innerText = coins;
+            
+            const skinGrid = document.getElementById('skinGridContainer');
+            skinGrid.innerHTML = '';
+            PLAYER_SKINS.forEach((skin, idx) => {
+                const isUnlocked = unlockedSkins.includes(idx);
+                const isSelected = selectedSkinIndex === idx;
+                
+                const card = document.createElement('div');
+                card.className = `skin-card ${isSelected ? 'selected' : ''}`;
+                card.innerHTML = `
+                    <div class="w-8 h-8 mx-auto mb-2 rounded" style="background: ${skin.primary}; box-shadow: 0 0 10px ${skin.primary}"></div>
+                    <div class="text-xs font-bold text-white mb-1">${skin.name}</div>
+                    <div class="text-xs text-amber-300">${isUnlocked ? (isSelected ? 'Đang dùng' : 'Chọn') : skin.price + ' xu'}</div>
+                `;
+                card.onclick = () => selectOrBuySkin(idx, skin.price, isUnlocked);
+                skinGrid.appendChild(card);
+            });
+
+            const powerupList = document.getElementById('powerupShopList');
+            powerupList.innerHTML = `
+                <div class="shop-item">
+                    <div>
+                        <div class="text-sm font-bold text-white">⚡ Khiên Bảo Vệ (30s)</div>
+                        <div class="text-xs text-slate-400">Tránh 1 lần va chạm</div>
+                    </div>
+                    <button class="btn-main text-xs py-2 px-4" onclick="window.buyPowerup('shield', 30)">25 xu</button>
+                </div>
+                <div class="shop-item">
+                    <div>
+                        <div class="text-sm font-bold text-white">🧪 X2 Đồng Xu H+ (45s)</div>
+                        <div class="text-xs text-slate-400">Nhân đôi đồng xu thu thập</div>
+                    </div>
+                    <button class="btn-main btn-purple text-xs py-2 px-4" onclick="window.buyPowerup('double', 45)">40 xu</button>
+                </div>
+            `;
+
+            document.getElementById('shopScreen').classList.remove('hidden');
+        }
+        window.openShop = openShop;
+
+        function closeShop() {
+            document.getElementById('shopScreen').classList.add('hidden');
+        }
+        window.closeShop = closeShop;
+
+        function selectOrBuySkin(idx, price, isUnlocked) {
+            if (isUnlocked) {
+                selectedSkinIndex = idx;
+                localStorage.setItem('flash_skin', idx);
+                player.color = PLAYER_SKINS[idx].primary;
+                player.secondaryColor = PLAYER_SKINS[idx].secondary;
+                openShop();
+            } else {
+                if (coins >= price) {
+                    coins -= price;
+                    localStorage.setItem('flash_coins', coins);
+                    unlockedSkins.push(idx);
+                    localStorage.setItem('flash_unlocked', JSON.stringify(unlockedSkins));
+                    selectedSkinIndex = idx;
+                    localStorage.setItem('flash_skin', idx);
+                    playSFX('correct');
+                    openShop();
+                } else {
+                    alert("Không đủ đồng xu hóa học!");
+                }
+            }
+        }
+
+        function buyPowerup(type, durationSec) {
+            let cost = type === 'shield' ? 25 : 40;
+            if (coins >= cost) {
+                coins -= cost;
+                localStorage.setItem('flash_coins', coins);
+                playSFX('correct');
+                if (type === 'shield') {
+                    activeShield = true;
+                    shieldTimer = durationSec * 60;
+                    document.getElementById('powerupName').innerText = 'Khiên';
+                    document.getElementById('powerupStatus').classList.remove('hidden');
+                } else if (type === 'double') {
+                    activeDoubleCoins = true;
+                    doubleCoinsTimer = durationSec * 60;
+                    document.getElementById('powerupName').innerText = 'X2 Xu';
+                    document.getElementById('powerupStatus').classList.remove('hidden');
+                }
+                closeShop();
+            } else {
+                alert("Không đủ đồng xu hóa học!");
+            }
+        }
+        window.buyPowerup = buyPowerup;
+
+        function showQuestion() {
+            document.getElementById('deathScreen').classList.add('hidden');
+            const qScreen = document.getElementById('questionScreen');
+            qScreen.classList.remove('hidden');
+            
+            const feedback = document.getElementById('questionFeedback');
+            feedback.classList.add('hidden');
+            
+            const randIndex = Math.floor(Math.random() * chemistryQuestions.length);
+            currentQuestionObj = chemistryQuestions[randIndex];
+            
+            document.getElementById('questionText').innerText = currentQuestionObj.q;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            currentQuestionObj.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn font-sans';
+                btn.innerText = String.fromCharCode(65 + index) + ". " + opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+        window.showQuestion = showQuestion;
+
+        function checkAnswer(selectedIndex, btnElement) {
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach(b => b.disabled = true);
+            
+            const feedback = document.getElementById('questionFeedback');
+            feedback.classList.remove('hidden');
+
+            if (selectedIndex === currentQuestionObj.correct) {
+                playSFX('correct');
+                btnElement.style.backgroundColor = '#059669';
+                btnElement.style.borderColor = '#10b981';
+                feedback.innerText = "Chính xác! Đang dịch chuyển về trước...";
+                feedback.className = "mt-4 text-base md:text-lg font-bold text-green-400";
+                
+                setTimeout(() => {
+                    document.getElementById('questionScreen').classList.add('hidden');
+                    reviveWithCountdown();
+                }, 1200);
+            } else {
+                playSFX('wrong');
+                btnElement.style.backgroundColor = '#991b1b';
+                btnElement.style.borderColor = '#ef4444';
+                feedback.innerText = "Sai rồi! Bắt đầu lại từ đầu...";
+                feedback.className = "mt-4 text-base md:text-lg font-bold text-red-400";
+                
+                setTimeout(() => {
+                    document.getElementById('questionScreen').classList.add('hidden');
+                    restartGame();
+                }, 1400);
+            }
+        }
+
+        function reviveWithCountdown() {
+            document.getElementById('hudLayer').classList.remove('hidden');
+            
+            if (currentState !== STATE_BOSS_FIGHT) {
+                obstacles.forEach(obs => obs.x += 550);
+                floatingItems.forEach(item => item.x += 550);
+                distance = Math.max(0, distance - 550);
+            }
+
+            player.dy = 0;
+            if (player.mode === 'CUBE') {
+                player.y = floorY - player.height;
+                player.isGrounded = true;
+            }
+            player.invincible = true;
+            player.invincibleTimer = 180;
+            
+            currentState = STATE_PAUSED;
+            
+            const countdownOverlay = document.getElementById('resumeCountdownOverlay');
+            const countdownText = document.getElementById('countdownText');
+            countdownOverlay.classList.remove('hidden');
+            
+            let count = 2;
+            countdownText.innerText = count;
+
+            let countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownText.innerText = count;
+                    playTone(440, 'sine', 0.1, 0.1);
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownOverlay.classList.add('hidden');
+                    playTone(880, 'sine', 0.2, 0.15);
+                    currentState = currentLevel === 5 ? STATE_BOSS_FIGHT : STATE_PLAYING;
+                    startMusicTrack();
+                }
+            }, 1000);
+        }
+
+        function restartGame() {
+            document.getElementById('deathScreen').classList.add('hidden');
+            document.getElementById('winScreen').classList.add('hidden');
+            document.getElementById('questionScreen').classList.add('hidden');
+            document.getElementById('resumeCountdownOverlay').classList.add('hidden');
+            document.getElementById('hudLayer').classList.remove('hidden');
+            
+            currentTheme = THEMES[currentLevel - 1] || THEMES[0];
+            player.reset();
+            particles = [];
+            distance = 0;
+
+            // Đã sửa: Khôi phục lại đúng Speed theo Base Speed của level hiện tại
+            speed = LEVEL_BASE_SPEEDS[currentLevel - 1] || 7.0;
+
+            generateMapForLevel(currentLevel);
+            
+            document.getElementById('levelValue').innerText = currentLevel;
+            document.getElementById('coinValue').innerText = coins;
+
+            currentTrackIndex = Math.floor(Math.random() * MUSIC_TRACKS.length);
+            startMusicTrack();
+            
+            initBackground();
+            currentState = STATE_PLAYING;
+            
+            // Đã sửa: Đảm bảo chỉ khởi chạy duy nhất 1 loop requestAnimationFrame
+            if (!isLoopRunning) {
+                isLoopRunning = true;
+                gameLoop();
+            }
+        }
+        window.restartGame = restartGame;
+
+        function handleInputStart(e) {
+            if (currentState === STATE_PLAYING || currentState === STATE_BOSS_FIGHT) {
+                isHolding = true;
+                player.jump();
+            }
+        }
+
+        function handleInputEnd(e) {
+            isHolding = false;
+        }
+
+        window.addEventListener('mousedown', handleInputStart);
+        window.addEventListener('touchstart', (e) => {
+            if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) handleInputStart(e);
+        }, {passive: false});
+        
+        window.addEventListener('mouseup', handleInputEnd);
+        window.addEventListener('touchend', handleInputEnd);
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                handleInputStart(e);
+            }
+            if (e.code === 'KeyR') {
+                if (currentState === STATE_DEAD || currentState === STATE_WIN || currentState === STATE_PLAYING || currentState === STATE_BOSS_FIGHT) {
+                    restartGame();
+                }
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') handleInputEnd(e);
+        });
+
+        initBackground();
+        drawBackground();
+    </script>
+</body>
+</html>
